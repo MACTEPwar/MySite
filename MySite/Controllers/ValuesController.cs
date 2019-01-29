@@ -2,7 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using MySite.Models;
 
 namespace MySite.Controllers
 {
@@ -10,11 +13,18 @@ namespace MySite.Controllers
     [ApiController]
     public class ValuesController : ControllerBase
     {
-        // GET api/values
-        [HttpGet]
-        public ActionResult<IEnumerable<string>> Get()
+        UserManager<Users> _userManager;
+        public ValuesController(UserManager<Users> userManager)
         {
-            return new string[] { "value1", "value2" };
+            _userManager = userManager;
+        }
+        // GET api/values
+        //[Authorize]
+        [HttpGet]
+        public async Task<ActionResult<Users>> Get()
+        {
+            // return await _userManager.GetUserAsync(HttpContext.User);
+            return Ok("Ok");
         }
 
         // GET api/values/5
