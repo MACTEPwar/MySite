@@ -6,6 +6,7 @@ using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -74,6 +75,9 @@ namespace MySite.Controllers
         }
 
         [HttpPost("Login")]
+        //[EnableCors(origins: "*", headers: "*", methods: "*")]
+        [EnableCors("AllowMyOrigin")]
+        //[DisableCors]
         public async Task<ActionResult<Object>> Login([FromBody] Users model)
         {
             var result = await _signInManager.PasswordSignInAsync(model.UserName, model.PasswordHash, false /* remember me*/, false);

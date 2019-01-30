@@ -5,6 +5,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Migrations\DbUserContexMigrations\20190130174202_v7.cs" />
+    <Compile Remove="Migrations\DbUserContexMigrations\20190130174202_v7.Designer.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Folder Include="wwwroot\ProductImages\" />
     <Folder Include="wwwroot\" />
   </ItemGroup>

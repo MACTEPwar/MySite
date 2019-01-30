@@ -68,6 +68,10 @@ namespace MySite
                         ClockSkew = TimeSpan.Zero // remove delay of token when expire
                     };
                 });
+            services.AddCors(options =>
+                options.AddPolicy("AllowMyOrigin",
+builder => builder.WithOrigins("https://localhost:44311").AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader()
+                ));
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
 
         }
@@ -84,19 +88,20 @@ namespace MySite
                 app.UseHsts();
             }
             app.UseStaticFiles(
-                    //new StaticFileOptions()
-                    //{
-                    //    FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), @"MyStaticFiles")),
-                    //    RequestPath = new PathString("/ProductImages")
-                    //}
+                //new StaticFileOptions()
+                //{
+                //    FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), @"MyStaticFiles")),
+                //    RequestPath = new PathString("/ProductImages")
+                //}
                 );
             app.UseFileServer(
-                    //new FileServerOptions()
-                    //{
-                    //    FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), @"MyStaticFiles")),
-                    //    RequestPath = new PathString("/ProductImages")
-                    //}
+                //new FileServerOptions()
+                //{
+                //    FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), @"MyStaticFiles")),
+                //    RequestPath = new PathString("/ProductImages")
+                //}
                 );
+            app.UseCors("AllowMyOrigin");
             app.UseAuthentication();
             app.UseHttpsRedirection();
             app.UseMvc();
