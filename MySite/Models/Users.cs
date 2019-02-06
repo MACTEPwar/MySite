@@ -10,7 +10,7 @@ namespace MySite.Models
     public class Users : IdentityUser
     {
         [MySqlCharset("utf-8")]
-        public string FirstNmae { get; set; }
+        public string FirstName { get; set; }
         [MySqlCharset("utf-8")]
         public string LastName { get; set; }
     }

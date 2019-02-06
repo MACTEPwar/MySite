@@ -2,15 +2,17 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using MySite.Data;
 
 namespace MySite.Migrations
 {
     [DbContext(typeof(DbProductsAndGroupsContext))]
-    partial class DbProductsAndGroupsContextModelSnapshot : ModelSnapshot
+    [Migration("20190131005201_v12")]
+    partial class v12
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -80,6 +82,8 @@ namespace MySite.Migrations
                     b.Property<int>("ImageSize");
 
                     b.Property<string>("ImageType");
+
+                    b.Property<int>("ProductId");
 
                     b.HasKey("Id");
 

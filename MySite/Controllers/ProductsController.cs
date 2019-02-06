@@ -27,6 +27,55 @@ namespace MySite.Controllers
             _env = env;
         }
 
+        //получить url картинки по ее id
+        public string GetUrlImage(int id)
+        {
+            var url = _productContext.Images.FirstOrDefault(x => x.Id == id);
+            if (url != null) return $"https://{HttpContext.Request.Host.Value}/ProductImages/{url.ImageName}.{url.ImageType}";
+            return null;
+
+        }
+
+        //получить все категории
+        [Route("Category")]
+        [HttpGet]
+        public Object GetCategory()
+        {
+            return _productContext.categories.Join(_productContext.Images, c => c.ImageId, i => i.Id, (c, i) => new
+            {
+                Id = c.Id,
+                Title = c.Title,
+                Discription = c.Discription,
+                Image = $"https://{HttpContext.Request.Host.Value}/ProductImages/{i.ImageName}.{i.ImageType}",
+                ImageId = i.Id
+                //Image = $"<img style='max-width:200;max-height:200px;' class='imgCat img-rounded' value='{i.Id}' src='https://{HttpContext.Request.Host.Value}/ProductImages/{i.ImageName}.{i.ImageType}' />"
+            });
+        }
+
+        //получить категорию по id
+        [Route("Category/{id}")]
+        [HttpGet]
+        public async Task<ActionResult<Category>> GetCategory(int id)
+        {
+            return await _productContext.categories.FirstAsync(x => x.Id == id);
+        }
+
+        //получить все подкатегорию
+        [Route("Group")]
+        [HttpGet]
+        public ActionResult<List<Groups>> GetGroups()
+        {
+            return _productContext.groups.ToList();
+        }
+
+        //получить подкатегории по id
+        [Route("Group/{id}")]
+        [HttpGet]
+        public async Task<ActionResult<Groups>> GetGroups(int id)
+        {
+            return await _productContext.groups.FirstAsync(x => x.Id == id);
+        }
+
         /// <summary>
         /// Создает новую категорию
         /// 
@@ -239,7 +288,7 @@ namespace MySite.Controllers
                 searchProduct.Price = product.Price;
                 searchProduct.Discount = product.Discount;
                 searchProduct.Discription = product.Discription;
-                searchProduct.Images = product.Images;
+                //searchProduct.Images = product.Images;
                 try
                 {
                     await _productContext.SaveChangesAsync();
@@ -277,7 +326,7 @@ namespace MySite.Controllers
         }
 
         //Изменить категорию по id
-        [HttpPut("Category/{id}")]
+        [HttpPut("Category/Update/{id}")]
         public async Task<ActionResult> Put(int id, [FromBody] Category category)
         {
             var searchCategory = _productContext.categories.First(s => s.Id == id);
@@ -285,6 +334,18 @@ namespace MySite.Controllers
             {
                 searchCategory.Title = category.Title;
                 searchCategory.Discription = category.Discription;
+                
+
+
+                if(searchCategory.ImageId != category.ImageId)
+                {
+                    var img = _productContext.Images.First(x => x.Id == (_productContext.categories.First(c => c.Id == id)).ImageId);
+                    System.IO.File.Delete($"{_env.WebRootPath}/ProductImages/{img.ImageName}.{img.ImageType}");
+                    _productContext.Entry(img).State = EntityState.Deleted;
+                }
+
+
+                searchCategory.ImageId = category.ImageId;
                 try
                 {
                     await _productContext.SaveChangesAsync();
@@ -315,15 +376,41 @@ namespace MySite.Controllers
             return Ok();
         }
 
+        //Удалить картинку по id
+        [HttpDelete("Image/Delete/{id}")]
+        public async Task<ActionResult> DeleteImage(int id)
+        {
+            try
+            {
+                var img = _productContext.Images.First(x => x.Id == id);
+                System.IO.File.Delete($"{_env.WebRootPath}/ProductImages/{img.ImageName}.{img.ImageType}");
+                _productContext.Entry(img).State = EntityState.Deleted;
+                await _productContext.SaveChangesAsync();
+                return Ok();
+            }
+            catch
+            {
+                return BadRequest("Все плохо");
+            }
+        }
+
         //Удалить категорию
         [HttpDelete("Category/Delete/{id}")]
         public async Task<ActionResult> DeleteCategory(int id)
         {
+            //object test;
             if (id < 0) return BadRequest("Not valid product id");
             try
             {
+                //await DeleteImageBiCategoryId(id);
+                var img = _productContext.Images.First(x => x.Id == (_productContext.categories.First(c => c.Id == id)).ImageId);
+                System.IO.File.Delete($"{_env.WebRootPath}/ProductImages/{img.ImageName}.{img.ImageType}");
+                _productContext.Entry(img).State = EntityState.Deleted;
+                //await _productContext.SaveChangesAsync();
+                //return Ok($@"{_env.WebRootPath}\ProductImages\{img.ImageName}.{img.ImageType}");
                 _productContext.Entry(await _productContext.categories.Where(x => x.Id == id).FirstOrDefaultAsync()).State = EntityState.Deleted;
                 await _productContext.SaveChangesAsync();
+                //test = $"{_env.WebRootPath}/ProductImages/{img.ImageName}.{img.ImageType}";
             }
             catch
             {
@@ -331,8 +418,6 @@ namespace MySite.Controllers
             }
             return Ok();
         }
-
-        //Удалить товары (с учетом категории и группы)
 
         //Удалить группу по id
         [HttpDelete("Group/Delete/{id}")]
@@ -351,6 +436,34 @@ namespace MySite.Controllers
             return Ok();
         }
 
+        [Route("Image/Add")]
+        [HttpPost]
+        public async Task<ActionResult> PostTest(IFormFile file)
+        {
+            if (ModelState.IsValid)
+            {
+                if (file != null)
+                {
+                    Images img = new Images
+                    {
+                        //ImageName = (_productContext.Images.Count() > 0 ? (Convert.ToInt32(await _productContext.Images.MaxAsync(x => x.Id)) + 1).ToString() : "0"),
+                        ImageName = $"{DateTime.Now.Year}{DateTime.Now.Month}{DateTime.Now.Day}{DateTime.Now.Hour}{DateTime.Now.Minute}{DateTime.Now.Second}",
+                        ImageSize = Convert.ToInt32(file.Length),
+                        ImageType = file.FileName.Substring(file.FileName.LastIndexOf(".") + 1, file.FileName.Length - file.FileName.LastIndexOf(".") - 1)
+                    };
+                    await _productContext.Images.AddAsync(img);
+                    await _productContext.SaveChangesAsync();
+                    using (var fileStream = new FileStream($"{_env.WebRootPath}/ProductImages/{img.ImageName}{file.FileName.Substring(file.FileName.LastIndexOf("."), file.FileName.Length - file.FileName.LastIndexOf("."))}", FileMode.Create))
+                    {
+                        await file.CopyToAsync(fileStream);
+                    }
+                    return Ok(img.Id);
+                }
+                else return BadRequest("file not found");
+            }
+            else return BadRequest("Model is not valid");
+        }
+
         [Route("Test/Get")]
         //public async Task<ActionResult<List<Images>>> GetTest()
         public async Task<ActionResult<string>> GetTest()
@@ -360,7 +473,7 @@ namespace MySite.Controllers
         }
 
         [Route("Test/Post")]
-        public async Task<ActionResult> PostTest(IFormFile[] files, int productId)
+        public async Task<ActionResult> PostTest(IFormFile[] files)
         {
             if (ModelState.IsValid)
             {
@@ -372,8 +485,8 @@ namespace MySite.Controllers
                         {
                             ImageName = (_productContext.Images.Count() > 0 ? (Convert.ToInt32(await _productContext.Images.MaxAsync(x => x.Id)) + 1).ToString() : "0"),
                             ImageSize = Convert.ToInt32(file.Length),
-                            ImageType = file.FileName.Substring(file.FileName.LastIndexOf(".") + 1, file.FileName.Length - file.FileName.LastIndexOf(".") - 1),
-                            ProductId = Convert.ToInt32(HttpContext.Request.Form.ToList().First(x => x.Key == "productId").Value)
+                            ImageType = file.FileName.Substring(file.FileName.LastIndexOf(".") + 1, file.FileName.Length - file.FileName.LastIndexOf(".") - 1)
+                            //ProductId = Convert.ToInt32(HttpContext.Request.Form.ToList().First(x => x.Key == "productId").Value)
                         };
                         await _productContext.Images.AddAsync(img);
                         await _productContext.SaveChangesAsync();

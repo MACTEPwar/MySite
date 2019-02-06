@@ -18,8 +18,8 @@ namespace MySite.Models
         [ForeignKey("Groups")]
         public int GroupId { get; set; }
 
-        public Groups Groups { get; set; }
-        public Products Products { get; set; }
+        //public Groups Groups { get; set; }
+        //public Products Products { get; set; }
     }
 
     [MySqlCharset("utf8")]
@@ -38,7 +38,7 @@ namespace MySite.Models
         [ForeignKey("Category")]
         public int CategoryId { get; set; }
 
-        public Category Category { get; set; }
+        //public Category Category { get; set; }
     }
 
     [MySqlCharset("utf8")]
@@ -62,9 +62,11 @@ namespace MySite.Models
         public int Discount { get; set; }
         [MySqlCharset("utf-8")]
         public string Discription { get; set; }
+        [MySqlCharset("utf-8")]
+        public int ImageId { get; set; }
 
-        public List<GropsAndProducts> groupAndProducts { get; set; }
-        public List<Images> Images { get; set; }
+        //public List<GropsAndProducts> groupAndProducts { get; set; }
+        //public List<Images> Images { get; set; }
     }
 
     [MySqlCharset("utf-8")]
@@ -78,8 +80,10 @@ namespace MySite.Models
         public string Title { get; set; }
         [MySqlCharset("utf-8")]
         public string Discription { get; set; }
+        [MySqlCharset("utf-8")]
+        public int ImageId { get; set; }
 
-        public List<Groups> Groups { get; set; }
+        //public List<Groups> Groups { get; set; }
     }
 
     [MySqlCharset("utf-8")]
@@ -93,9 +97,7 @@ namespace MySite.Models
         public int ImageSize { get; set; }
         [MySqlCharset("utf-8")]
         public string ImageName { get; set; }
-        [ForeignKey("Products")]
-        public int ProductId { get; set; }
 
-        public Products Products { get; set; }
+        //public Products Products { get; set; }
     }
 }

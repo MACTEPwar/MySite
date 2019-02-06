@@ -53,6 +53,17 @@ namespace MySite.Controllers
             return await _userManager.GetUserAsync(HttpContext.User);
         }
 
+        ///ТЕСТ ТЕСТ ТЕСТ ТЕСТ ТЕСТ ТЕСТ ТЕСТ 
+        /// <summary>
+        /// поулчить список всех пользователей
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet("All")]
+        public async Task<ActionResult<List<Users>>> GetAllUsers()
+        {
+            return _userContext.Users.ToList();
+        }
+
         [HttpPost("Register")]
         public async Task<ActionResult<object>> Register([FromBody] Users model)
         {
