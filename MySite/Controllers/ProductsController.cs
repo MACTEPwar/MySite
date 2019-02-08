@@ -63,9 +63,16 @@ namespace MySite.Controllers
         //получить все подкатегорию
         [Route("Group")]
         [HttpGet]
-        public ActionResult<List<Groups>> GetGroups()
+        public object GetGroups()
         {
-            return _productContext.groups.ToList();
+            return _productContext.groups.Join(_productContext.categories, g => g.CategoryId, c => c.Id, (g, c) => new {
+                Id = g.Id,
+                Title = g.Title,
+                Discription = g.Discription,
+                CategoryId = g.CategoryId,
+                CategoryTitle = c.Title,
+                CategoryList = this.GetCategory()
+            });
         }
 
         //получить подкатегории по id
@@ -303,7 +310,7 @@ namespace MySite.Controllers
         }
 
         //Изменить группу по id
-        [HttpPut("Group/{id}")]
+        [HttpPut("Group/Update/{id}")]
         public async Task<ActionResult> Put(int id, [FromBody] Groups group)
         {
             var searchGroup = _productContext.groups.First(s => s.Id == id);
