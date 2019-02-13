@@ -138,20 +138,28 @@ namespace MySite.Controllers
         /// </summary>
         /// <param name="product"></param>
         /// <returns></returns>
+        //[Route("Product/Create")]
+        //[HttpPost]
+        //public async Task<ActionResult> Post(Products product)
+        //{
+        //    if (!ModelState.IsValid) return BadRequest("Not valid product model");
+        //    try
+        //    {
+        //        _productContext.Add(product);
+        //        await _productContext.SaveChangesAsync();
+        //    }
+        //    catch
+        //    {
+        //        return BadRequest("Error");
+        //    }
+        //    return Ok();
+        //}
+
+
         [Route("Product/Create")]
         [HttpPost]
         public async Task<ActionResult> Post(Products product)
         {
-            if (!ModelState.IsValid) return BadRequest("Not valid product model");
-            try
-            {
-                _productContext.Add(product);
-                await _productContext.SaveChangesAsync();
-            }
-            catch
-            {
-                return BadRequest("Error");
-            }
             return Ok();
         }
 
@@ -222,6 +230,7 @@ namespace MySite.Controllers
            {
                Id = gap.Id,
                ProductId = gap.ProductId,
+               GroupId = g.Id,
                GroupTitle = g.Title,
                GroupDiscription = g.Discription,
                CategoryId = g.CategoryId
@@ -232,9 +241,10 @@ namespace MySite.Controllers
            {
                Id = g.Id,
                ProductId = g.ProductId,
+               GroupId = g.GroupId,
                GroupTitle = g.GroupTitle,
                GroupDiscription = g.GroupDiscription,
-               CategoryId = g.CategoryId,
+               CategoryId = c.Id,
                CategoryTitle = c.Title,
                CategoryDiscription = c.Discription
            })
@@ -244,20 +254,42 @@ namespace MySite.Controllers
            {
                Id = c.Id,
                ProductTitle = p.Title,
+               ProductDiscription = p.Discription,
                Count = p.Count,
                Price = p.Price,
                Unit = p.Unit,
                Discount = p.Discount,
+               GroupId = c.GroupId,
                GroupTitle = c.GroupTitle,
                GroupDiscription = c.GroupDiscription,
+               CategoryId = c.CategoryId,
                CategoryTitle = c.CategoryTitle,
-               CategoryDiscription = c.CategoryDiscription
+               CategoryDiscription = c.CategoryDiscription,
+               ImageId = p.ImageId
            })
            .Where(x => x.ProductTitle.Contains(title) || title == null)
            .Where(x => x.Price >= priceMin || priceMin == null)
            .Where(x => x.Price <= priceMax || priceMax == null)
            .Where(x => x.Count >= countMin || countMin == null)
            .Where(x => x.Count <= countMax || countMax == null)
+           .Join(_productContext.Images, p => p.ImageId, i => i.Id, (p, i) => new
+           {
+               Id = p.Id,
+               ProductTitle = p.ProductTitle,
+               ProductDiscription = p.ProductDiscription,
+               Count = p.Count,
+               Price = p.Price,
+               Unit = p.Unit,
+               Discount = p.Discount,
+               GroupId = p.GroupId,
+               GroupTitle = p.GroupTitle,
+               GroupDiscription = p.GroupDiscription,
+               CategoryId = p.CategoryId,
+               CategoryTitle = p.CategoryTitle,
+               CategoryDiscription = p.CategoryDiscription,
+               ImageId = p.ImageId,
+               ImagePath = $"https://{HttpContext.Request.Host.Value}/ProductImages/{i.ImageName}.{i.ImageType}"
+           })
            ;
         }
 
@@ -473,10 +505,18 @@ namespace MySite.Controllers
 
         [Route("Test/Get")]
         //public async Task<ActionResult<List<Images>>> GetTest()
-        public async Task<ActionResult<string>> GetTest()
+        public async Task<ActionResult> GetTest(Category c)
         {
             //return _productContext.Images.ToList();
-            return _env.WebRootPath + @"\ProductImages\";
+            return Ok($"{c.Title} {c.Discription}");
+            
+
+            //Category c = new Category();
+            //c.Title = t;c.Discription = d; c.ImageId = i;
+            //_productContext.categories.Add();
+            //_productContext.categories.Add(c);
+            //_productContext.SaveChanges();
+            //return Content(d);
         }
 
         [Route("Test/Post")]
